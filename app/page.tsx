@@ -214,6 +214,16 @@ export default function HomePage() {
         <div className="final-tag">Gratis. Sin registro obligatorio. Empieza en segundos.</div>
       </section>
 
+      {/* FOOTER */}
+      <footer style={{ textAlign: "center", padding: "32px 16px 40px", borderTop: "1px solid var(--line)", marginTop: 40 }}>
+        <p style={{ fontFamily: "var(--pixel)", fontSize: 9, color: "var(--ink-faint)", letterSpacing: "0.18em", margin: 0 }}>
+          ARCADE VAULT © {new Date().getFullYear()} &nbsp;·&nbsp;{" "}
+          <a href="/about" style={{ color: "var(--cyan)", textDecoration: "none" }}>
+            ABOUT &amp; CONTACTO
+          </a>
+        </p>
+      </footer>
+
     </div>
   );
 }
