@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { Press_Start_2P, JetBrains_Mono } from "next/font/google";
+import { Press_Start_2P, JetBrains_Mono, Courier_Prime } from "next/font/google";
+import { UserProvider } from "@/_contexts/UserContext";
+import Nav from "@/_components/Nav";
 import "./globals.css";
 
 const pressStart2P = Press_Start_2P({
@@ -10,6 +12,12 @@ const pressStart2P = Press_Start_2P({
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+});
+
+const courierPrime = Courier_Prime({
+  variable: "--font-courier-prime",
+  weight: ["400", "700"],
   subsets: ["latin"],
 });
 
@@ -26,12 +34,28 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${pressStart2P.variable} ${jetbrainsMono.variable}`}
+      className={`${pressStart2P.variable} ${jetbrainsMono.variable} ${courierPrime.variable}`}
     >
       <body>
         <div className="av-bg" />
         <div className="av-noise" />
-        <div className="av-root">{children}</div>
+        <UserProvider>
+          <div className="av-root">
+            <Nav />
+            <main className="av-main">{children}</main>
+            <footer style={{
+              borderTop: "1px solid var(--line)",
+              padding: "20px 32px",
+              textAlign: "center",
+              color: "var(--ink-faint)",
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.16em",
+            }}>
+              © 2026 ARCADE VAULT · HECHO CON PIXELES Y NEÓN · v2.6.0
+            </footer>
+          </div>
+        </UserProvider>
       </body>
     </html>
   );
