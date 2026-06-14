@@ -1,6 +1,6 @@
 # SPEC 02 — Arcade Vault Home Page
 
-> **Status:** Aprobado · **Depends on:** 01-visual-mvp · **Date:** 2026-06-14
+> **Status:** Implementado · **Depends on:** 01-visual-mvp · **Date:** 2026-06-14
 > **Objective:** Implementar la landing page (Home) basada en `references/templates/home-about/home.jsx`, convirtiendo `app/page.tsx` en la nueva ruta raíz y moviendo la Biblioteca a `app/biblioteca/page.tsx`.
 
 ---
