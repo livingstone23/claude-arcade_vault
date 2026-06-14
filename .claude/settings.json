@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__playwright__browser_take_screenshot",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.filename // empty' | { read -r f; [ -n \"$f\" ] || exit 0; full=\"/Users/lcano/github.com/ClaudeCode/05_arcade_vault/$f\"; [ -f \"$full\" ] && cp \"$full\" \"/Users/lcano/github.com/ClaudeCode/05_arcade_vault/,playwright-screenshots/$(date +%Y%m%d_%H%M%S)_$(basename \"$f\")\" 2>/dev/null || true; }",
+            "statusMessage": "Saving screenshot to ,playwright-screenshots..."
+          }
+        ]
+      }
+    ]
+  }
+}
