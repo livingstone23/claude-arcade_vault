@@ -1,6 +1,6 @@
 # SPEC 01 — Arcade Vault Visual MVP
 
-> **Status:** Aprobado · **Depends on:** — · **Date:** 2026-06-14
+> **Status:** Implementado · **Depends on:** — · **Date:** 2026-06-14
 > **Objective:** Port all 5 reference screens (Library, Game Detail, Game Player, Auth, Hall of Fame) + Nav into Next.js App Router as a fully visual, non-functional MVP with client-side user session via React Context + localStorage.
 
 ---
