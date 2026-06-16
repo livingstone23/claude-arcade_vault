@@ -43,7 +43,7 @@ function GameCard({ game }: { game: Game }) {
           </div>
           <button
             className={"btn " + (game.color === "magenta" ? "magenta" : game.color === "yellow" ? "yellow" : "")}
-            onClick={(e) => { e.stopPropagation(); router.push(`/games/${game.id}`); }}
+            onClick={(e) => { e.stopPropagation(); router.push(`/games/${game.id}/play`); }}
           >
             JUGAR
           </button>
