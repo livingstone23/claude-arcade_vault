@@ -14,9 +14,43 @@ Arcade Vault — online gaming platform where users compete for points. Uses Spe
 - **React 19.2.4**
 - **Tailwind CSS 4** — configured via `postcss.config.mjs`
 - **TypeScript 5**
+- **Supabase** (`@supabase/supabase-js`) — score persistence + leaderboards
+- **Resend** — contact form email (`app/api/contact/route.ts`)
+
+## Project Structure
+
+Non-routable folders use `_` prefix (App Router convention):
+
+- `app/` — routes. Pages: `/` (home), `/about`, `/auth`, `/biblioteca` (game library), `/salon` (leaderboards). Games at `/games/[id]` (detail) and `/games/[id]/play` (player).
+- `_lib/data.ts` — `GAMES[]` registry (single source of truth for all games), `Game`/`ScoreRow`/`SavedScore` types, `CATS`, `seededScores()` (fake leaderboard filler).
+- `_lib/supabase.ts` — browser client + `scoreTable(gameId)` helper → table name `scores_<game_id_underscored>`.
+- `_contexts/UserContext.tsx` — `useUser()`: localStorage-backed login, `saveScore()` (writes localStorage + Supabase insert).
+- `_components/` — shared UI (`Nav`, `Home/*`, `About/*`).
+- `specs/` — spec-driven design docs (`NN-slug.md`), one per feature/game.
+- `references/starter-games/` — vanilla JS reference games to port.
+- `public/games/` + `public/<game>.js` — bundled canvas game JS + sprite assets.
+
+## Games
+
+Registry in `_lib/data.ts` (`GAMES[]`). 8 entries; implemented play pages: **bloque-buster** (Arkanoid), **caida** (Tetris), **serpentina** (Snake), **rocas** (Asteroids). Each game = canvas JS in `public/<id>.js` loaded by `app/games/<id>/play/page.tsx`.
+can find more info in (see `references/implemented_games.md`) when you need to check more info about it.
+
+### Adding a game → use the `add-game` skill
+
+Integrates a canvas game at `/games/{id}/play`. 4 steps: register in `GAMES[]`, wrap JS with `window.GAME` bridge, build React play page (HUD + game-over modal + leaderboard), apply Supabase `scores_<id>` table migration. **Spec first**: write `specs/NN-slug.md` before implementing.
+
+## Supabase
+
+- Score tables per game: `scores_<game_id>` (underscores), columns `player_name`, `score`, `created_at`.
+- `/salon` reads real leaderboards from Supabase.
+- MCP server configured in `.mcp.json` (project `ozvrrayziiffplrueuix`) — use Supabase MCP tools for migrations/queries.
+- Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `.env.template`).
 
 ## Skills
-Usa siempre /fronted-design  para Cuando requieras hacer diseños html!!!
+
+- `/spec` + `/spec-impl` (from `Klerith/fernando-skills`, pinned in `skills-lock.json`) — spec-driven workflow.
+- `add-game` — integrate new canvas games (see above).
+- `/frontend-design` — **always use for HTML/UI design work.**
 
 ## Next.js 16 Breaking Changes
 

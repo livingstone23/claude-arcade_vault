@@ -1,6 +1,6 @@
 # SPEC 08 — Integración del juego SERPENTINA (serpentina)
 
-> **Status:** Aprobado · **Depends on:** SPEC 06 · **Date:** 2026-06-16
+> **Status:** Implementado · **Depends on:** SPEC 06 · **Date:** 2026-06-16
 > **Objective:** Integrar SERPENTINA en `/games/serpentina/play` con HUD React,
 > bridge canvas construido desde cero usando el sprite atlas de frutas, score y
 > nivel persistidos en Supabase y flujo de game-over completo.
