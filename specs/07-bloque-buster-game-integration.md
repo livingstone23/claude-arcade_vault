@@ -1,6 +1,6 @@
 # SPEC 07 — Integración del juego Arkanoid (Bloque Buster) en la plataforma
 
-> **Status:** Implementado · **Depends on:** 01-visual-mvp, 06-supabase-scores-leaderboard · **Date:** 2026-06-16
+> **Status:** Aprobado · **Depends on:** 01-visual-mvp, 06-supabase-scores-leaderboard · **Date:** 2026-06-16
 > **Objective:** Integrar el juego Arkanoid canvas en la ruta `/games/bloque-buster/play`
 > con HUD React sincronizado, spritesheet servido desde `public/`, score guardado en Supabase
 > vía UserContext, y leaderboard real en `/salon`.
