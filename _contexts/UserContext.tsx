@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import type { SavedScore } from "@/_lib/data";
+import { supabase, scoreTable } from "@/_lib/supabase";
 
 interface UserState {
   user: { name: string } | null;
@@ -22,6 +23,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
+  useEffect(() => {
+    if (localStorage.getItem("av_migrated")) return;
+    try {
+      const all: SavedScore[] = JSON.parse(localStorage.getItem("av_scores") || "[]");
+      if (all.length === 0) { localStorage.setItem("av_migrated", "1"); return; }
+      Promise.all(
+        all.map((s) =>
+          supabase.from(scoreTable(s.game)).insert({
+            player_name: s.name,
+            score: s.score,
+            created_at: new Date(s.at).toISOString(),
+          })
+        )
+      ).finally(() => localStorage.setItem("av_migrated", "1"));
+    } catch {}
+  }, []);
+
   const login = (u: { name: string }) => {
     setUser(u);
     localStorage.setItem("av_user", JSON.stringify(u));
@@ -38,6 +56,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       all.push({ ...entry, at: Date.now() });
       localStorage.setItem("av_scores", JSON.stringify(all));
     } catch {}
+    supabase
+      .from(scoreTable(entry.game))
+      .insert({ player_name: entry.name, score: entry.score })
+      .then(() => {}, () => {});
   };
 
   return (
