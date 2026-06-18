@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { GAMES } from "@/_lib/data";
 import { useUser } from "@/_contexts/UserContext";
 
+type SkinName = "clasico" | "neon" | "retro";
+
 interface AsteroidsAPI {
   pause(): void;
   resume(): void;
   end(): void;
   destroy(): void;
+  setSkin(name: SkinName): void;
 }
 
 interface AsteroidsCallbacks {
@@ -45,6 +48,11 @@ export default function RocasPlayPage() {
   const [finalScore, setFinalScore] = useState(0);
   const [saved, setSaved] = useState(false);
   const [name, setName] = useState(user?.name ?? "INVITADO");
+  const [skin, setSkinState] = useState<SkinName>(() => {
+    if (typeof window === "undefined") return "clasico";
+    const saved = window.localStorage.getItem("arcade-skin-rocas");
+    return saved === "neon" || saved === "retro" ? saved : "clasico";
+  });
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>;
@@ -100,6 +108,11 @@ export default function RocasPlayPage() {
     apiRef.current?.end();
   }
 
+  function handleSetSkin(next: SkinName) {
+    apiRef.current?.setSkin(next);
+    setSkinState(next);
+  }
+
   function handleSave() {
     saveScore({ game: "rocas", score: finalScore, name });
     setSaved(true);
@@ -153,6 +166,23 @@ export default function RocasPlayPage() {
             </div>
           </div>
           <div className="hud-actions">
+            <div style={{ display: "flex", gap: 6 }}>
+              {(["clasico", "neon", "retro"] as const).map((s) => (
+                <button
+                  key={s}
+                  className="btn ghost"
+                  disabled={over}
+                  onClick={() => handleSetSkin(s)}
+                  style={
+                    skin === s
+                      ? { borderColor: "var(--yellow)", color: "var(--yellow)" }
+                      : undefined
+                  }
+                >
+                  {s === "clasico" ? "CLÁSICO" : s.toUpperCase()}
+                </button>
+              ))}
+            </div>
             <button className="btn yellow" onClick={handlePause}>
               {paused ? "REANUDAR" : "PAUSA"}
             </button>

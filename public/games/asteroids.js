@@ -1,10 +1,54 @@
 'use strict';
 
+const SKINS = {
+  clasico: {
+    bg: '#000000',
+    ship: '#ffffff',
+    bullet: '#ffffff',
+    asteroid: '#ffffff',
+    thruster: 'rgba(255, 130, 0, 0.85)',
+    powerup: '#00ffff',
+    hud: '#ffffff',
+    hudDim: 'rgba(255,255,255,0.65)',
+    particle: '255,255,255',
+  },
+  neon: {
+    bg: '#0a001a',
+    ship: '#ff00ff',
+    bullet: '#00ffff',
+    asteroid: '#39ff14',
+    thruster: 'rgba(255, 106, 0, 0.85)',
+    powerup: '#00ffff',
+    hud: '#00ffff',
+    hudDim: 'rgba(0,255,255,0.65)',
+    particle: '255,0,255',
+  },
+  retro: {
+    bg: '#0d0700',
+    ship: '#ffb000',
+    bullet: '#ffb000',
+    asteroid: '#cc7000',
+    thruster: 'rgba(255, 106, 0, 0.85)',
+    powerup: '#33ff66',
+    hud: '#ffb000',
+    hudDim: 'rgba(255,176,0,0.65)',
+    particle: '255,176,0',
+  },
+};
+
 function startAsteroids( canvas, callbacks ) {
 
 const ctx = canvas.getContext( '2d' );
 const W = 800;
 const H = 600;
+
+let skinName = ( () => {
+  try {
+    const saved = localStorage.getItem( 'arcade-skin-rocas' );
+    return saved && SKINS[ saved ] ? saved : 'clasico';
+  } catch { return 'clasico'; }
+} )();
+let skin = SKINS[ skinName ];
 
 // ── Input ─────────────────────────────────────────────────────────────────────
 
@@ -59,7 +103,7 @@ class Bullet {
   }
 
   draw() {
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = skin.bullet;
     ctx.beginPath();
     ctx.arc( this.x, this.y, this.radius, 0, Math.PI * 2 );
     ctx.fill();
@@ -114,7 +158,7 @@ class Asteroid {
     ctx.save();
     ctx.translate( this.x, this.y );
     ctx.rotate( this.rot );
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = skin.asteroid;
     ctx.lineWidth = 1.5;
     ctx.lineJoin = 'round';
     ctx.beginPath();
@@ -154,12 +198,12 @@ class PowerUp {
     ctx.save();
     ctx.translate( this.x, this.y );
     ctx.rotate( Math.PI / 4 );
-    ctx.strokeStyle = '#0ff';
+    ctx.strokeStyle = skin.powerup;
     ctx.lineWidth = 2;
     const r = this.radius * pulse;
     ctx.strokeRect( -r, -r, r * 2, r * 2 );
     ctx.restore();
-    ctx.fillStyle = '#0ff';
+    ctx.fillStyle = skin.powerup;
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -236,7 +280,7 @@ class Ship {
     ctx.save();
     ctx.translate( this.x, this.y );
     ctx.rotate( this.angle );
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = skin.ship;
     ctx.lineWidth = 1.5;
     ctx.lineJoin = 'round';
 
@@ -255,7 +299,7 @@ class Ship {
       ctx.moveTo( -8, -4 );
       ctx.lineTo( -8 - rand( 6, 14 ), 0 );
       ctx.lineTo( -8, 4 );
-      ctx.strokeStyle = 'rgba(255, 130, 0, 0.85)';
+      ctx.strokeStyle = skin.thruster;
       ctx.stroke();
     }
 
@@ -286,7 +330,7 @@ class Particle {
 
   draw() {
     const alpha = this.ttl / this.life;
-    ctx.strokeStyle = `rgba(255,255,255,${ alpha.toFixed( 2 ) })`;
+    ctx.strokeStyle = `rgba(${ skin.particle },${ alpha.toFixed( 2 ) })`;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo( this.x, this.y );
@@ -446,7 +490,7 @@ function drawLifeIcon( x, y ) {
   ctx.save();
   ctx.translate( x, y );
   ctx.rotate( -Math.PI / 2 );
-  ctx.strokeStyle = '#fff';
+  ctx.strokeStyle = skin.ship;
   ctx.lineWidth = 1.2;
   ctx.lineJoin = 'round';
   ctx.beginPath();
@@ -460,7 +504,7 @@ function drawLifeIcon( x, y ) {
 }
 
 function drawHUD() {
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = skin.hud;
   ctx.font = '15px monospace';
 
   ctx.textAlign = 'left';
@@ -474,23 +518,23 @@ function drawHUD() {
 
   if ( ship.tripleShot > 0 ) {
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#0ff';
+    ctx.fillStyle = skin.powerup;
     ctx.fillText( `3x  ${ ship.tripleShot.toFixed( 1 ) }s`, 14, 46 );
   }
 }
 
 function drawOverlay( title, sub ) {
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = skin.hud;
   ctx.font = 'bold 46px monospace';
   ctx.fillText( title, W / 2, H / 2 - 18 );
   ctx.font = '18px monospace';
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.fillStyle = skin.hudDim;
   ctx.fillText( sub, W / 2, H / 2 + 22 );
 }
 
 function draw() {
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = skin.bg;
   ctx.fillRect( 0, 0, W, H );
 
   particles.forEach( p => p.draw() );
@@ -527,10 +571,16 @@ function destroy() {
   window.removeEventListener( 'keydown', onKeyDown );
   window.removeEventListener( 'keyup', onKeyUp );
 }
+function setSkin( name ) {
+  if ( !SKINS[ name ] ) return;
+  skinName = name;
+  skin = SKINS[ name ];
+  try { localStorage.setItem( 'arcade-skin-rocas', name ); } catch {}
+}
 
 initGame();
 rafId = requestAnimationFrame( loop );
-return { pause, resume, end, destroy };
+return { pause, resume, end, destroy, setSkin };
 
 } // end startAsteroids
 
