@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { GAMES } from "@/_lib/data";
 import { useUser } from "@/_contexts/UserContext";
 
+type SkinName = "clasico" | "neon" | "retro";
+
 interface BloqueBusterAPI {
   pause(): void;
   resume(): void;
   end(): void;
   destroy(): void;
+  setSkin(name: SkinName): void;
 }
 
 interface BloqueBusterCallbacks {
@@ -45,6 +48,15 @@ export default function BloqueBusterPlayPage() {
   const [finalScore, setFinalScore] = useState(0);
   const [saved, setSaved] = useState(false);
   const [name, setName] = useState(user?.name ?? "INVITADO");
+  const [skin, setSkinState] = useState<SkinName>(() => {
+    if (typeof window === "undefined") return "clasico";
+    try {
+      const saved = localStorage.getItem("arcade-skin-bloque-buster");
+      return saved === "neon" || saved === "retro" ? saved : "clasico";
+    } catch {
+      return "clasico";
+    }
+  });
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>;
@@ -65,6 +77,7 @@ export default function BloqueBusterPlayPage() {
           clearInterval(intervalId);
           clearTimeout(timeoutId);
           apiRef.current = window.BLOQUE_BUSTER.start(canvas, callbacks);
+          apiRef.current.setSkin(skin);
         }
       }, 50);
       timeoutId = setTimeout(() => {
@@ -91,6 +104,11 @@ export default function BloqueBusterPlayPage() {
 
   function handleEnd() { apiRef.current?.end(); }
 
+  function handleSkinChange(next: SkinName) {
+    setSkinState(next);
+    apiRef.current?.setSkin(next);
+  }
+
   function handleSave() {
     saveScore({ game: "bloque-buster", score: finalScore, name });
     setSaved(true);
@@ -110,6 +128,7 @@ export default function BloqueBusterPlayPage() {
       onGameOver: (fs) => { setFinalScore(fs); setOver(true); },
     };
     apiRef.current = window.BLOQUE_BUSTER.start(canvas, callbacks);
+    apiRef.current.setSkin(skin);
   }
 
   return (
@@ -137,6 +156,19 @@ export default function BloqueBusterPlayPage() {
             </div>
           </div>
           <div className="hud-actions">
+            <div style={{ display: "flex", gap: 6 }}>
+              {(["clasico", "neon", "retro"] as const).map((s) => (
+                <button
+                  key={s}
+                  className={skin === s ? "btn yellow" : "btn ghost"}
+                  disabled={over}
+                  onClick={() => handleSkinChange(s)}
+                  style={{ fontSize: 11, padding: "6px 10px" }}
+                >
+                  {s === "clasico" ? "CLÁSICO" : s.toUpperCase()}
+                </button>
+              ))}
+            </div>
             <button className="btn yellow" onClick={handlePause}>
               {paused ? "REANUDAR" : "PAUSA"}
             </button>

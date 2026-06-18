@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { GAMES } from "@/_lib/data";
 import { useUser } from "@/_contexts/UserContext";
 
+type SkinName = "clasico" | "neon" | "retro";
+
 interface CaidaAPI {
   pause(): void;
   resume(): void;
   end(): void;
   destroy(): void;
+  setSkin(name: SkinName): void;
 }
 
 interface CaidaCallbacks {
@@ -43,6 +46,20 @@ export default function CaidaPlayPage() {
   const [finalScore, setFinalScore] = useState(0);
   const [saved, setSaved] = useState(false);
   const [name, setName] = useState(user?.name ?? "INVITADO");
+  const [skin, setSkinState] = useState<SkinName>(() => {
+    if (typeof window === "undefined") return "clasico";
+    try {
+      const saved = window.localStorage.getItem("arcade-skin-caida");
+      return saved === "neon" || saved === "retro" || saved === "clasico" ? saved : "clasico";
+    } catch {
+      return "clasico";
+    }
+  });
+
+  function handleSkinChange(name: SkinName) {
+    setSkinState(name);
+    apiRef.current?.setSkin(name);
+  }
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>;
@@ -129,6 +146,19 @@ export default function CaidaPlayPage() {
             </div>
           </div>
           <div className="hud-actions">
+            <div style={{ display: "flex", gap: 6 }}>
+              {(["clasico", "neon", "retro"] as const).map((s) => (
+                <button
+                  key={s}
+                  className={skin === s ? "btn yellow" : "btn ghost"}
+                  disabled={over}
+                  onClick={() => handleSkinChange(s)}
+                  style={{ fontSize: 11, padding: "6px 10px" }}
+                >
+                  {s === "clasico" ? "CLÁSICO" : s.toUpperCase()}
+                </button>
+              ))}
+            </div>
             <button className="btn yellow" onClick={handlePause}>
               {paused ? "REANUDAR" : "PAUSA"}
             </button>

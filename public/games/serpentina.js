@@ -42,6 +42,31 @@
   const LEVEL_STEP    = 5;   // fruits per level
   const INTERVAL_DEC  = 15;  // ms reduction per level
 
+  // ── Skins ─────────────────────────────────────────────────────────────────
+  const SKINS = {
+    clasico: {
+      bg: "#0a0a0a",
+      grid: "rgba(255,255,255,0.03)",
+      head: "rgba(0,255,120,ALPHA)",
+      body: "rgba(0,200,80,ALPHA)",
+      eye: "#001a08",
+    },
+    neon: {
+      bg: "#08000c",
+      grid: "rgba(255,0,255,0.05)",
+      head: "rgba(255,0,255,ALPHA)",
+      body: "rgba(0,234,255,ALPHA)",
+      eye: "#0a0014",
+    },
+    retro: {
+      bg: "#1a0f00",
+      grid: "rgba(255,176,0,0.04)",
+      head: "rgba(255,176,0,ALPHA)",
+      body: "rgba(204,119,0,ALPHA)",
+      eye: "#1a0f00",
+    },
+  };
+
   // ── Bridge ────────────────────────────────────────────────────────────────
   function startSerpentina(canvas, callbacks) {
     const ctx = canvas.getContext("2d");
@@ -54,6 +79,16 @@
     let snake, dir, nextDir, fruit, fruitKey, score, level, interval, timerId;
     let gameEnded = false;
     let bridgePaused = false;
+
+    let skinName = (() => {
+      try {
+        const saved = localStorage.getItem("arcade-skin-serpentina");
+        return saved && SKINS[saved] ? saved : "clasico";
+      } catch {
+        return "clasico";
+      }
+    })();
+    let skin = SKINS[skinName];
 
     // Sprite image
     const img = new Image();
@@ -96,11 +131,11 @@
     // ── Render ──────────────────────────────────────────────────────────────
     function draw() {
       // Background
-      ctx.fillStyle = "#0a0a0a";
+      ctx.fillStyle = skin.bg;
       ctx.fillRect(0, 0, W, H);
 
       // Grid (subtle)
-      ctx.strokeStyle = "rgba(255,255,255,0.03)";
+      ctx.strokeStyle = skin.grid;
       ctx.lineWidth = 0.5;
       for (let c = 0; c <= COLS; c++) {
         ctx.beginPath();
@@ -131,9 +166,7 @@
       snake.forEach((seg, i) => {
         const isHead = i === 0;
         const alpha = isHead ? 1 : Math.max(0.4, 1 - i * 0.015);
-        ctx.fillStyle = isHead
-          ? `rgba(0,255,120,${alpha})`
-          : `rgba(0,200,80,${alpha})`;
+        ctx.fillStyle = (isHead ? skin.head : skin.body).replace("ALPHA", alpha);
 
         const inset = isHead ? 1 : 2;
         ctx.beginPath();
@@ -148,7 +181,7 @@
 
         // Eyes on head
         if (isHead) {
-          ctx.fillStyle = "#001a08";
+          ctx.fillStyle = skin.eye;
           const ex = seg.x * CELL_W + CELL_W * 0.5;
           const ey = seg.y * CELL_H + CELL_H * 0.5;
           const er = CELL_W * 0.1;
@@ -284,7 +317,17 @@
       window.removeEventListener("keydown", onKeyDown);
     }
 
-    return { pause, resume, end, destroy };
+    function setSkin(name) {
+      if (!SKINS[name]) return;
+      skinName = name;
+      skin = SKINS[name];
+      try {
+        localStorage.setItem("arcade-skin-serpentina", name);
+      } catch {}
+      draw();
+    }
+
+    return { pause, resume, end, destroy, setSkin };
   }
 
   window.SERPENTINA = { start: startSerpentina };
