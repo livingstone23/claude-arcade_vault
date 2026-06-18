@@ -51,6 +51,7 @@ Integrates a canvas game at `/games/{id}/play`. 4 steps: register in `GAMES[]`, 
 - `/spec` + `/spec-impl` (from `Klerith/fernando-skills`, pinned in `skills-lock.json`) — spec-driven workflow.
 - `add-game` — integrate new canvas games (see above).
 - `/frontend-design` — **always use for HTML/UI design work.**
+- `/game-planner` — analyzes the catalog and recommends the next game to add. Tracks suggestions across sessions in `memory/game_suggestions.md` and `.agents/agents_sugestions.md`. Say "siguiente" to skip, "acepto" to commit.
 
 ## Next.js 16 Breaking Changes
 
