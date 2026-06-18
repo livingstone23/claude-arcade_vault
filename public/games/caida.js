@@ -8,11 +8,35 @@ const BLOCK = 30;
 const BOARD_W = COLS * BLOCK;
 const SIDE_X = BOARD_W + 20;
 
-const COLORS = [
-  null,
-  '#4dd0e1', '#ffd54f', '#ba68c8', '#81c784',
-  '#e57373', '#90caf9', '#ffb74d', '#9e9e9e',
-];
+const SKINS = {
+  clasico: {
+    bg: '#050512',
+    grid: 'rgba(255,255,255,0.06)',
+    pieces: [null, '#4dd0e1', '#ffd54f', '#ba68c8', '#81c784', '#e57373', '#90caf9', '#ffb74d', '#9e9e9e'],
+    blockHighlight: 'rgba(255,255,255,0.12)',
+    hudText: 'rgba(255,255,255,0.35)',
+    sidebarFill: 'rgba(255,255,255,0.04)',
+    sidebarStroke: 'rgba(255,255,255,0.1)',
+  },
+  neon: {
+    bg: '#0a0014',
+    grid: 'rgba(255,0,255,0.10)',
+    pieces: [null, '#00f0ff', '#fff700', '#ff00ff', '#39ff14', '#ff2079', '#00aaff', '#ff8c00', '#b388ff'],
+    blockHighlight: 'rgba(255,255,255,0.18)',
+    hudText: 'rgba(0,240,255,0.65)',
+    sidebarFill: 'rgba(255,0,255,0.05)',
+    sidebarStroke: 'rgba(0,240,255,0.25)',
+  },
+  retro: {
+    bg: '#100c00',
+    grid: 'rgba(255,176,0,0.08)',
+    pieces: [null, '#33ff99', '#ffb000', '#ff8800', '#66ff33', '#ff5500', '#ffcc00', '#ff9900', '#cc8800'],
+    blockHighlight: 'rgba(255,200,100,0.15)',
+    hudText: 'rgba(255,176,0,0.55)',
+    sidebarFill: 'rgba(255,176,0,0.04)',
+    sidebarStroke: 'rgba(255,176,0,0.18)',
+  },
+};
 
 const PIECES = [
   null,
@@ -34,6 +58,14 @@ let board, current, next, score, lines, level;
 let gameOver, lastTime, dropAccum, dropInterval;
 let rafId;
 let paused = false;
+
+let skinName = (() => {
+  try {
+    const saved = localStorage.getItem('arcade-skin-caida');
+    return saved && SKINS[saved] ? saved : 'clasico';
+  } catch { return 'clasico'; }
+})();
+let skin = SKINS[skinName];
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -156,15 +188,15 @@ function endGame() {
 function drawBlock(x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
   ctx.globalAlpha = alpha ?? 1;
-  ctx.fillStyle = COLORS[colorIndex];
+  ctx.fillStyle = skin.pieces[colorIndex];
   ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillStyle = skin.blockHighlight;
   ctx.fillRect(x * size + 1, y * size + 1, size - 2, 4);
   ctx.globalAlpha = 1;
 }
 
 function drawGrid() {
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.strokeStyle = skin.grid;
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -185,13 +217,13 @@ function drawSidebar() {
   const px = SIDE_X;
   const py = 40;
 
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillStyle = skin.hudText;
   ctx.font = '10px monospace';
   ctx.fillText('SIGUIENTE', px, py);
 
   const boxSize = 4 * NB + 8;
-  ctx.fillStyle = 'rgba(255,255,255,0.04)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillStyle = skin.sidebarFill;
+  ctx.strokeStyle = skin.sidebarStroke;
   ctx.lineWidth = 1;
   ctx.fillRect(px, py + 6, boxSize, boxSize);
   ctx.strokeRect(px, py + 6, boxSize, boxSize);
@@ -212,7 +244,7 @@ function drawSidebar() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = '#050512';
+  ctx.fillStyle = skin.bg;
   ctx.fillRect(0, 0, BOARD_W, ROWS * BLOCK);
 
   drawGrid();
@@ -291,6 +323,12 @@ function destroy() {
   cancelAnimationFrame(rafId);
   window.removeEventListener('keydown', onKeyDown);
 }
+function setSkin(name) {
+  if (!SKINS[name]) return;
+  skinName = name;
+  skin = SKINS[name];
+  try { localStorage.setItem('arcade-skin-caida', name); } catch {}
+}
 
 // ── Boot ──────────────────────────────────────────────────────────────────
 
@@ -304,7 +342,7 @@ callbacks.onScore?.(0);
 callbacks.onLevel?.(1);
 rafId = requestAnimationFrame(loop);
 
-return { pause, resume, end, destroy };
+return { pause, resume, end, destroy, setSkin };
 
 } // end startCaida
 

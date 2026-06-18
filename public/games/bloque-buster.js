@@ -27,6 +27,81 @@ const SPRITES = {
   },
 };
 
+// ─── skins ────────────────────────────────────────────────────
+// "clasico" preserva el sprite original sin tinte. "neon"/"retro" tiñen
+// cada sprite (bloques/paddle/ball) por color sólido vía
+// globalCompositeOperation = 'source-atop', preservando la silueta/alpha
+// del PNG original. bg/overlay/hud son fillStyle planos.
+const SKINS = {
+  clasico: {
+    tint: null,
+    bg: '#000000',
+    overlay: 'rgba(0,0,0,0.6)',
+    pauseOverlay: 'rgba(0,0,0,0.65)',
+    hudText: '#fff',
+    pauseActive: '#f0c040',
+    pauseInactive: '#444',
+    pauseActiveText: '#000',
+    pauseInactiveText: '#fff',
+  },
+  neon: {
+    tint: {
+      red: '#ff2d6d', yellow: '#fff21f', cyan: '#23f0ff', magenta: '#d400ff',
+      hotpink: '#ff5fdc', green: '#39ff84', gray: '#8ad7ff',
+      paddle: '#23f0ff', ball: '#fff21f',
+    },
+    bg: '#05010d',
+    overlay: 'rgba(5,1,13,0.7)',
+    pauseOverlay: 'rgba(5,1,13,0.75)',
+    hudText: '#fff21f',
+    pauseActive: '#39ff84',
+    pauseInactive: '#5a3a7a',
+    pauseActiveText: '#05010d',
+    pauseInactiveText: '#fff',
+  },
+  retro: {
+    tint: {
+      red: '#ff8a1f', yellow: '#ffd23d', cyan: '#3ddc84', magenta: '#ff9d4d',
+      hotpink: '#ffb000', green: '#5cf06a', gray: '#caa15a',
+      paddle: '#ffb000', ball: '#ffd23d',
+    },
+    bg: '#0e0a02',
+    overlay: 'rgba(14,10,2,0.7)',
+    pauseOverlay: 'rgba(14,10,2,0.75)',
+    hudText: '#ffd23d',
+    pauseActive: '#ffb000',
+    pauseInactive: '#5a4a2a',
+    pauseActiveText: '#0e0a02',
+    pauseInactiveText: '#ffd23d',
+  },
+};
+
+let skinName = (() => {
+  try {
+    const saved = localStorage.getItem('arcade-skin-bloque-buster');
+    return saved && SKINS[saved] ? saved : 'clasico';
+  } catch { return 'clasico'; }
+})();
+let skin = SKINS[skinName];
+
+// cache de sprites tintados: { 'neon:block_red': HTMLCanvasElement, ... }
+const tintCache = {};
+
+function getTintedSprite(name, sp) {
+  const key = skinName + ':' + name;
+  if (tintCache[key]) return tintCache[key];
+  const color = name.startsWith('block_') ? skin.tint[name.slice(6)] : skin.tint[name];
+  const oc = document.createElement('canvas');
+  oc.width = sp.sw; oc.height = sp.sh;
+  const octx = oc.getContext('2d');
+  octx.drawImage(ssImg, sp.sx, sp.sy, sp.sw, sp.sh, 0, 0, sp.sw, sp.sh);
+  octx.globalCompositeOperation = 'source-atop';
+  octx.fillStyle = color;
+  octx.fillRect(0, 0, sp.sw, sp.sh);
+  tintCache[key] = oc;
+  return oc;
+}
+
 let ssImg = null;
 let ssLoaded = false;
 const ssCallbacks = [];
@@ -56,6 +131,11 @@ function drawSprite(ctx, name, x, y, w, h) {
   if (!ssLoaded) return;
   const sp = name.startsWith('block_') ? SPRITES.blocks[name.slice(6)] : SPRITES[name];
   if (!sp) return;
+  if (skin.tint && (name === 'paddle' || name === 'ball' || name.startsWith('block_'))) {
+    const tinted = getTintedSprite(name, sp);
+    ctx.drawImage(tinted, 0, 0, sp.sw, sp.sh, x, y, w, h);
+    return;
+  }
   ctx.drawImage(ssImg, sp.sx, sp.sy, sp.sw, sp.sh, x, y, w, h);
 }
 
@@ -285,9 +365,9 @@ function update(dt) {
 }
 
 function drawOverlay(message) {
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillStyle = skin.overlay;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = skin.hudText;
   ctx.font = 'bold 64px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -295,9 +375,9 @@ function drawOverlay(message) {
 }
 
 function drawPauseOverlay() {
-  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillStyle = skin.pauseOverlay;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = skin.hudText;
   ctx.font = 'bold 56px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -307,12 +387,12 @@ function drawPauseOverlay() {
   for (let i = 0; i < 5; i++) {
     const bx = PAUSE_BTN_ROW_X + i * (PAUSE_BTN_W + PAUSE_BTN_GAP);
     const isActive = (i + 1) === currentLevel;
-    ctx.fillStyle = isActive ? '#f0c040' : '#444';
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.fillStyle = isActive ? skin.pauseActive : skin.pauseInactive;
+    ctx.strokeStyle = skin.hudText; ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(bx, PAUSE_BTN_Y, PAUSE_BTN_W, PAUSE_BTN_H, 6);
     ctx.fill(); ctx.stroke();
-    ctx.fillStyle = isActive ? '#000' : '#fff';
+    ctx.fillStyle = isActive ? skin.pauseActiveText : skin.pauseInactiveText;
     ctx.font = 'bold 20px monospace';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(i + 1, bx + PAUSE_BTN_W / 2, PAUSE_BTN_Y + PAUSE_BTN_H / 2);
@@ -320,7 +400,7 @@ function drawPauseOverlay() {
 }
 
 function draw() {
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = skin.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (const block of blocks)
@@ -335,7 +415,7 @@ function draw() {
   drawSprite(ctx, 'ball',   ball.x,   ball.y,   ball.w,   ball.h);
 
   if (gameState === 'playing') {
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = skin.hudText;
     ctx.font = 'bold 18px monospace';
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     ctx.fillText('Score: ' + score, 10, 10);
@@ -395,6 +475,13 @@ function destroy() {
   canvas.removeEventListener('click',     onCanvasClick);
 }
 
+function setSkin(name) {
+  if (!SKINS[name]) return;
+  skinName = name;
+  skin = SKINS[name];
+  try { localStorage.setItem('arcade-skin-bloque-buster', name); } catch {}
+}
+
 // ─── boot ─────────────────────────────────────────────────────
 loadSpritesheet(() => {
   initPaddle();
@@ -405,7 +492,7 @@ loadSpritesheet(() => {
   rafId = requestAnimationFrame(loop);
 });
 
-return { pause, resume, end, destroy };
+return { pause, resume, end, destroy, setSkin };
 
 } // end startBloqueBuster
 
