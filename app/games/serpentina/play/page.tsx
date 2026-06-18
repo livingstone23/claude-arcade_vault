@@ -5,6 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GAMES } from "@/_lib/data";
 import { useUser } from "@/_contexts/UserContext";
+import { useTouchDevice } from "@/_lib/useTouchDevice";
+import TouchControls from "@/_components/TouchControls/TouchControls";
+import RotateDeviceHint from "@/_components/RotateDeviceHint";
 
 type SkinName = "clasico" | "neon" | "retro";
 
@@ -35,6 +38,7 @@ const game = GAMES.find((g) => g.id === "serpentina")!;
 export default function SerpentinaPlayPage() {
   const router = useRouter();
   const { user, saveScore } = useUser();
+  const isTouch = useTouchDevice();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const apiRef = useRef<SerpentinaAPI | null>(null);
@@ -143,6 +147,20 @@ export default function SerpentinaPlayPage() {
   return (
     <>
       <Script src="/games/serpentina.js" strategy="afterInteractive" />
+
+      {isTouch && <RotateDeviceHint />}
+      {isTouch && !over && !paused && (
+        <TouchControls
+          config={{
+            dpad: {
+              up: { key: "ArrowUp", code: "ArrowUp" },
+              down: { key: "ArrowDown", code: "ArrowDown" },
+              left: { key: "ArrowLeft", code: "ArrowLeft" },
+              right: { key: "ArrowRight", code: "ArrowRight" },
+            },
+          }}
+        />
+      )}
 
       <div className="av-player fade-in">
         <div className="player-hud">
