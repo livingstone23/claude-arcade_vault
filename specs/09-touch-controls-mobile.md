@@ -1,6 +1,6 @@
 # SPEC 09 — Controles táctiles para mobile
 
-> **Status:** Aprobado · **Depends on:** 05-asteroides, 07-bloque-buster, 08-serpentina (y entrada existente de `caida`) · **Date:** 2026-06-18
+> **Status:** Implementado · **Depends on:** 05-asteroides, 07-bloque-buster, 08-serpentina (y entrada existente de `caida`) · **Date:** 2026-06-18
 > **Objective:** Agregar una capa de controles táctiles tipo D-pad + botones de acción (estilo control de consola), superpuesta sobre los 4 juegos jugables (`rocas`, `caida`, `serpentina`, `bloque-buster`), implementada disparando `KeyboardEvent` sintéticos hacia los bindings de teclado ya existentes (sin modificar ninguno de los 4 motores canvas), visible solo en dispositivos táctiles, manteniendo el teclado funcional en paralelo, con escalado responsivo del canvas y una sugerencia (no bloqueante) de rotar a horizontal.
 
 ---
